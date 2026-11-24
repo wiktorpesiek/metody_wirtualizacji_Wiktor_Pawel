@@ -57,3 +57,46 @@ def health():
     with get_conn() as conn:
         conn.execute("SELECT 1")
     return {"status": "ok"}
+
+
+
+@app.get("/listings")
+def search_listings(
+    q: str | None = Query(None, max_length=100),
+    category_id: int | None = None,
+    city: str | None = None,
+    min_price: Decimal | None = Query(None, ge=0),
+    max_price: Decimal | None = Query(None, ge=0),
+    sort: Literal["newest", "price_asc", "price_desc"] = "newest",
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+):
+    """Lista ogłoszeń z filtrami. Każdy filtr = jeden warunek WHERE, wartości zawsze przez %s."""
+    if min_price is not None and max_price is not None and min_price > max_price:
+        raise HTTPException(400, "min_price nie może być większe niż max_price")
+
+    where, params = [], []
+    if q:
+        where.append("(title ILIKE %s OR description ILIKE %s)")
+        params += [f"%{q}%", f"%{q}%"]
+    if category_id is not None:
+        where.append("category_id = %s")
+        params.append(category_id)
+    if city:
+        where.append("city ILIKE %s")
+        params.append(city)
+    if min_price is not None:
+        where.append("price >= %s")
+        params.append(min_price)
+    if max_price is not None:
+        where.append("price <= %s")
+        params.append(max_price)
+
+    sql = f"SELECT {COLUMNS} FROM listings"
+    if where:
+        sql += " WHERE " + " AND ".join(where)
+    sql += f" ORDER BY {SORTS[sort]} LIMIT %s OFFSET %s"
+    params += [limit, offset]
+
+    with get_conn() as conn:
+        return conn.execute(sql, params).fetchall()
