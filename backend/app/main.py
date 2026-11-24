@@ -112,3 +112,23 @@ def get_listing(listing_id: int):
     if row is None:
         raise HTTPException(404, "Ogłoszenie nie istnieje")
     return row
+
+
+
+@app.get("/categories")
+def list_categories():
+    with get_conn() as conn:
+        return conn.execute("SELECT id, name FROM categories ORDER BY name").fetchall()
+
+
+@app.post("/listings", status_code=201)
+def create_listing(data: ListingIn):
+    try:
+        with get_conn() as conn:
+            return conn.execute(
+                f"""INSERT INTO listings (title, description, price, city, category_id)
+                    VALUES (%s, %s, %s, %s, %s) RETURNING {COLUMNS}""",
+                (data.title, data.description, data.price, data.city, data.category_id),
+            ).fetchone()
+    except ForeignKeyViolation:
+        raise HTTPException(400, "Kategoria nie istnieje")
