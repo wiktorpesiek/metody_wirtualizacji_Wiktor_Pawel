@@ -20,14 +20,23 @@ services:
         condition: service_healthy
     ports: ["8000:8000"]
     networks: [frontnet, backnet]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   frontend:
     build: ./frontend
     environment:
       BACKEND_URL: ${BACKEND_URL}
-    depends_on: [backend]
+    depends_on:
+      backend:
+        condition: service_healthy
     ports: ["8501:8501"]
     networks: [frontnet]
+
 
 networks:
   frontnet:
