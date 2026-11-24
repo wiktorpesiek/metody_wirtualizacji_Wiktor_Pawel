@@ -100,3 +100,15 @@ def search_listings(
 
     with get_conn() as conn:
         return conn.execute(sql, params).fetchall()
+
+    
+
+@app.get("/listings/{listing_id}")
+def get_listing(listing_id: int):
+    with get_conn() as conn:
+        row = conn.execute(
+            f"SELECT {COLUMNS} FROM listings WHERE id = %s", (listing_id,)
+        ).fetchone()
+    if row is None:
+        raise HTTPException(404, "Ogłoszenie nie istnieje")
+    return row
