@@ -149,3 +149,12 @@ def update_listing(listing_id: int, data: ListingIn):
     if row is None:
         raise HTTPException(404, "Ogłoszenie nie istnieje")
     return row
+@app.delete("/listings/{listing_id}", status_code=204)
+def delete_listing(listing_id: int):
+    with get_conn() as conn:
+        deleted = conn.execute(
+            "DELETE FROM listings WHERE id = %s RETURNING id", (listing_id,)
+        ).fetchone()
+    if deleted is None:
+        raise HTTPException(404, "Ogłoszenie nie istnieje")
+    return Response(status_code=204)
