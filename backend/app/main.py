@@ -132,3 +132,20 @@ def create_listing(data: ListingIn):
             ).fetchone()
     except ForeignKeyViolation:
         raise HTTPException(400, "Kategoria nie istnieje")
+@app.put("/listings/{listing_id}")
+def update_listing(listing_id: int, data: ListingIn):
+    """Pełna aktualizacja ogłoszenia (PUT = podmieniamy wszystkie pola)."""
+    try:
+        with get_conn() as conn:
+            row = conn.execute(
+                f"""UPDATE listings
+                    SET title = %s, description = %s, price = %s, city = %s, category_id = %s
+                    WHERE id = %s RETURNING {COLUMNS}""",
+                (data.title, data.description, data.price, data.city,
+                 data.category_id, listing_id),
+            ).fetchone()
+    except ForeignKeyViolation:
+        raise HTTPException(400, "Kategoria nie istnieje")
+    if row is None:
+        raise HTTPException(404, "Ogłoszenie nie istnieje")
+    return row
