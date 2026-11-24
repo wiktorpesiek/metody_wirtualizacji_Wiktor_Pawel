@@ -2,7 +2,15 @@ from fastapi import FastAPI
 
 from app.db import get_conn
 
+import psycopg
+from fastapi import Request
+from fastapi.responses import JSONResponse
+
 app = FastAPI(title="Mini Marketplace API")
+
+@app.exception_handler(psycopg.OperationalError)
+async def db_unavailable(request: Request, exc: psycopg.OperationalError):
+    return JSONResponse(status_code=503, content={"detail": "Baza danych niedostępna"})
 
 
 @app.get("/health")
