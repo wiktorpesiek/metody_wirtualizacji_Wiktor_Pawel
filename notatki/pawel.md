@@ -19,3 +19,12 @@ e787dd7  endpointy /health i /listings z bazy)
 **Ujawnione wymagania backendu:** min. 4 endpointy (GET pojedynczy, GET lista, POST, PUT/PATCH lub DELETE); JSON udokumentowany w README; walidacja (400); 404 dla nieistniejącego zasobu; /health; healthcheck w compose na /health + depends_on: service_healthy; konfiguracja przez zmienne środowiskowe
 **Problemy i rozwiązanie:** zatrzymanie bazy dawało 500 na froncie → backend zwraca 503, frontend rozróżnia awarię bazy i backendu
 **Na następne zajęcia:** implementacja API
+
+## Zajęcia 4 — 26.11.2026 — Paweł
+**Zrobione:** (healthcheck backendu na /health + depends_on service_healthy, PUT i DELETE z 404)
+**Problemy i rozwiązanie:** (np. PowerShell psuł JSON w curl → dane w plikach scripts/*.json)
+
+## Zajęcia 5 — 26.11.2026 — Paweł
+**Zrobione:** (testy zapisu test_write.py, dokumentacja API w README)
+**Problemy i rozwiązanie:** (np. testy wymagają przebudowy obrazu, bo kod jest kopiowany przy buildzie)
+**Na następne zajęcia:** pokaz KM2
